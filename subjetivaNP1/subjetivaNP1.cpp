@@ -1,36 +1,129 @@
-#include <iostream>
-using namespace std;
+#include <stdio.h>
+#include <cmath>
 
-int main(){
-        float vm, km_l, dist, vlr_comb, t, qtd_l, vlr_ab;
+int main() {
+    // Declaração das variáveis em inglês
+    float avg_speed = 0, fuel_efficiency = 0, distance = 0, fuel_price = 0, travel_time;
+    float fuel_needed, refuel_cost, tank_capacity = 0, tank_current = 0, fuel_to_fill, remaining_fuel;
+    int tank_full = 0;
+    int result;
 
-        printf("Digite a velocidade media (km/h): ");
-        scanf("%f", &vm);
-        printf("Digite a autonomia (km/l): ");
-        scanf("%f", &km_l);
-        printf("Digite a distancia (km): ");
-        scanf("%f", &dist);
-        printf("Digite o valor do combustivel (R$/l): ");
-        scanf("%f", &vlr_comb);
+    // Validação dos dados de entrada (em português) com tratamento de caracteres inválidos
+    printf("Digite a velocidade média do veículo (km/h): ");
+    result = scanf("%f", &avg_speed);
+    while (result != 1 || avg_speed <= 0) {
+        printf("Valor inválido! Digite um número maior que zero: ");
+        while(getchar() != '\n');
+        result = scanf("%f", &avg_speed);
+    }
 
-        t = dist/vm;
-        qtd_l = dist/km_l;
-        vlr_ab = qtd_l * vlr_comb;
+    printf("Digite a autonomia do veículo (km/l): ");
+    result = scanf("%f", &fuel_efficiency);
+    while (result != 1 || fuel_efficiency <= 0) {
+        printf("Valor inválido! Digite um número maior que zero: ");
+        while(getchar() != '\n');
+        result = scanf("%f", &fuel_efficiency);
+    }
 
-        if(vm > 20){
-            for(int i = vm; i > 20; i = i - 20){
-                km_l = km_l * 0.9;
-                printf("\nAutonomia do veículo: %.2fKm/L", km_l);
+    printf("Digite a distância do trajeto (km): ");
+    result = scanf("%f", &distance);
+    while (result != 1 || distance <= 0) {
+        printf("Valor inválido! Digite um número maior que zero: ");
+        while(getchar() != '\n');
+        result = scanf("%f", &distance);
+    }
+
+    printf("Digite o preço do combustível (R$/l): ");
+    result = scanf("%f", &fuel_price);
+    while (result != 1 || fuel_price <= 0) {
+        printf("Valor inválido! Digite um número maior que zero: ");
+        while(getchar() != '\n');
+        result = scanf("%f", &fuel_price);
+    }
+
+    printf("Digite a capacidade total do tanque (L): ");
+    result = scanf("%f", &tank_capacity);
+    while (result != 1 || tank_capacity <= 0) {
+        printf("Valor inválido! Digite um número maior que zero: ");
+        while(getchar() != '\n');
+        result = scanf("%f", &tank_capacity);
+    }
+
+    printf("O tanque está cheio?\n Sim - 1\t Não - 2: ");
+    result = scanf("%i", &tank_full);
+    while (result != 1 || (tank_full != 1 && tank_full != 2)) {
+        printf("Opção inválida! Digite 1 para Sim ou 2 para Não: ");
+        while(getchar() != '\n');
+        result = scanf("%i", &tank_full);
+    }
+
+    // Calcula o tempo de viagem
+    travel_time = distance / avg_speed;
+
+    // Ajusta a eficiência do combustível conforme a velocidade média
+    if (avg_speed > 20) {
+        int intervals = (int)((avg_speed - 20) / 20);
+        for (int i = 0; i < intervals; i++) {
+            fuel_efficiency = fuel_efficiency * 0.9;
+        }
+    }
+
+    // Calcula o total de combustível necessário para a viagem
+    fuel_needed = distance / fuel_efficiency;
+
+    // Caso o tanque não esteja cheio
+    if (tank_full == 2) {
+        printf("Quanto de combustível há atualmente no tanque? (L): ");
+        result = scanf("%f", &tank_current);
+        while (result != 1 || tank_current < 0 || tank_current >= tank_capacity) {
+            if (result != 1 || tank_current < 0) {
+                printf("Valor inválido! Digite um número maior ou igual a zero: ");
+            } else {
+                printf("Quantidade inválida! O valor deve ser menor que a capacidade total do tanque (%.2f L): ", tank_capacity);
             }
+            while(getchar() != '\n');
+            result = scanf("%f", &tank_current);
         }
 
-        printf("Tempo gasto na viagem: %.2f h\n", t);
-        printf("Quantidade de combustivel gasta: %.2fL\n", qtd_l);
-        printf("Valor gasto com combustivel: R$ %.2f\n", vlr_ab);
-        
+        // Calcula quanto falta para encher o tanque
+        fuel_to_fill = tank_capacity - tank_current;
+        printf("Você precisa de %.2fL para encher o tanque.\n", fuel_to_fill);
 
-        return 0;
+        // Custo para encher o tanque
+        refuel_cost = fuel_to_fill * fuel_price;
+
+        // Calcula quanto combustível vai faltar para a viagem
+        remaining_fuel = fuel_needed - tank_current;
+        int stops = 0;
+
+        // Se o combustível atual for insuficiente para a viagem
+        if (tank_current < fuel_needed) {
+            stops = (int)(remaining_fuel / tank_capacity);
+            if ((int)remaining_fuel % (int)tank_capacity != 0) stops++;
+            printf("Você precisará parar %d vez(es) para abastecer.\n", stops);
+        } else {
+            printf("Não será necessário parar para abastecer.\n");
+        }
+    } else {
+        // Caso o tanque esteja cheio
+        printf("Tanque cheio.\n");
+        // Se o tanque for suficiente, não há custo extra
+        refuel_cost = (fuel_needed > tank_capacity) ? (fuel_needed - tank_capacity) * fuel_price : 0;
+    }
+
+    // Custo total do combustível para a viagem
+    float total_fuel_cost = fuel_needed * fuel_price;
+
+    // Formatação do tempo: horas e minutos
+    int horas = (int)travel_time;
+    int minutos = (int)((travel_time - horas) * 60);
+
+    // Exibe os resultados (em português)
+    printf("\nAutonomia ajustada do veículo: %.2f km/l\n", fuel_efficiency);
+    printf("Tempo estimado de viagem: %dh %dmin\n", horas, minutos);
+    printf("Combustível necessário para a viagem: %.2f L\n", fuel_needed);
+    printf("Custo total do combustível: R$ %.2f\n", total_fuel_cost);
+    printf("Valor extra de abastecimento: R$ %.2f\n", refuel_cost);
+
+    return 0;
 }
-
-
-
