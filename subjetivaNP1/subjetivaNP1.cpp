@@ -7,6 +7,7 @@ int main() {
     float fuel_needed, refuel_cost, tank_capacity = 0, tank_current = 0, fuel_to_fill, remaining_fuel;
     int tank_full = 0;
     int result;
+    int stops = 0;
 
     // Validação dos dados de entrada (em português) com tratamento de caracteres inválidos
     printf("Digite a velocidade média do veículo (km/h): ");
@@ -57,6 +58,20 @@ int main() {
         result = scanf("%i", &tank_full);
     }
 
+    // Pergunta se está atrasado e deseja ajustar o tempo de viagem
+    float desired_time = 0;
+    printf("Você está atrasado e precisa chegar em um tempo específico?\nDigite o tempo desejado em horas (ou 0 para ignorar): ");
+    result = scanf("%f", &desired_time);
+    while (result != 1 || desired_time < 0) {
+        printf("Valor inválido! Digite um número maior ou igual a zero: ");
+        while(getchar() != '\n');
+        result = scanf("%f", &desired_time);
+    }
+    if (desired_time > 0) {
+        avg_speed = distance / desired_time;
+        printf("Velocidade média ajustada para chegar em %.2f horas: %.2f km/h\n", desired_time, avg_speed);
+    }
+
     // Calcula o tempo de viagem
     travel_time = distance / avg_speed;
 
@@ -68,10 +83,7 @@ int main() {
         }
     }
 
-    // Calcula o total de combustível necessário para a viagem
-    fuel_needed = distance / fuel_efficiency;
-
-    // Caso o tanque não esteja cheio
+    // Reserva: se combustível atual < 10% do tanque, aumenta autonomia em 5%
     if (tank_full == 2) {
         printf("Quanto de combustível há atualmente no tanque? (L): ");
         result = scanf("%f", &tank_current);
@@ -84,7 +96,19 @@ int main() {
             while(getchar() != '\n');
             result = scanf("%f", &tank_current);
         }
+        if (tank_current < 0.1 * tank_capacity) {
+            fuel_efficiency *= 1.05;
+            printf("Autonomia aumentada em 5%% por uso da reserva.\n");
+        }
+    } else {
+        tank_current = tank_capacity;
+    }
 
+    // Calcula o total de combustível necessário para a viagem
+    fuel_needed = distance / fuel_efficiency;
+
+    // Caso o tanque não esteja cheio
+    if (tank_full == 2) {
         // Calcula quanto falta para encher o tanque
         fuel_to_fill = tank_capacity - tank_current;
         printf("Você precisa de %.2fL para encher o tanque.\n", fuel_to_fill);
@@ -94,13 +118,15 @@ int main() {
 
         // Calcula quanto combustível vai faltar para a viagem
         remaining_fuel = fuel_needed - tank_current;
-        int stops = 0;
 
         // Se o combustível atual for insuficiente para a viagem
         if (tank_current < fuel_needed) {
             stops = (int)(remaining_fuel / tank_capacity);
             if ((int)remaining_fuel % (int)tank_capacity != 0) stops++;
             printf("Você precisará parar %d vez(es) para abastecer.\n", stops);
+
+            // Adiciona 15 minutos (0.25h) por parada ao tempo de viagem
+            travel_time += stops * 0.25;
         } else {
             printf("Não será necessário parar para abastecer.\n");
         }
@@ -109,6 +135,14 @@ int main() {
         printf("Tanque cheio.\n");
         // Se o tanque for suficiente, não há custo extra
         refuel_cost = (fuel_needed > tank_capacity) ? (fuel_needed - tank_capacity) * fuel_price : 0;
+        if (fuel_needed > tank_capacity) {
+            stops = (int)((fuel_needed - tank_capacity) / tank_capacity);
+            if ((int)(fuel_needed - tank_capacity) % (int)tank_capacity != 0) stops++;
+            travel_time += stops * 0.25;
+            printf("Você precisará parar %d vez(es) para abastecer.\n", stops);
+        } else {
+            printf("Não será necessário parar para abastecer.\n");
+        }
     }
 
     // Custo total do combustível para a viagem
