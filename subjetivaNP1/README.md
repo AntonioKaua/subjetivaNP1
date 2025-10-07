@@ -64,6 +64,6 @@
     - O tratamento de entradas inválidas garante robustez e evita erros de execução.
     - O sistema cobre os principais cenários de uso sugeridos pelo professor, tornando o cálculo realista e prático para planejamento de viagens veiculares.
 
-    Organograna utilizado : Trello
+    Evidências de Gestão do Projeto Ultilizando o Trello.
     - Segue o link : https://trello.com/invite/b/68d1d366e072d152ce1069d7/ATTI60b03a733feca6f4b3e22760f60679e2D07CD067/meu-quadro-do-trello
 */
